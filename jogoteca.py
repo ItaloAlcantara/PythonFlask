@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, session, flash
 
 app = Flask(__name__)
+app.secret_key = 'kimera'
 class Jogo:
     def __init__(self, nome, categoria, console):
         self.nome = nome
@@ -24,7 +25,11 @@ def index():
 
 @app.route('/novo')
 def novo():
-    return render_template('novo.html', titulo ='Novo Game')
+
+    if session['usuario_logado'] is None or 'usuario_logado' not in session:
+        return redirect('/login')
+    else:
+        return render_template('novo.html', titulo ='Novo Game')
 
 
 @app.route('/criar', methods=['POST', ])
@@ -46,9 +51,18 @@ def login():
 @app.route('/autenticar', methods=['POST', ])
 def autenticar():
     if senha_padrao == request.form['senha']:
+        session['usuario_logado'] = request.form['usuario']
+        flash(request.form['usuario'] + ' logou com sucesso!')
         return redirect('/')
     else:
+        flash('Usuario ou senha invalidos, tente novamente!')
         return redirect('/login')
+
+@app.route('/logout')
+def logout():
+    session['usuario_logado'] = None
+    flash('Logout feito com sucesso!')
+    return redirect('/login')
 
 
 app.run(debug=True)
