@@ -4,6 +4,6 @@ app = Flask(__name__)
 
 @app.route('/inicio')
 def ola():
-    return "<h1>Olá</h1>"
+    return render_template('lista.html')
 
 app.run()
