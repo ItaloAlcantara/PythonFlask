@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, flash
+from flask import Flask, render_template, request, redirect, session, flash, url_for
 
 app = Flask(__name__)
 app.secret_key = 'kimera'
@@ -27,7 +27,7 @@ def index():
 def novo():
 
     if session['usuario_logado'] is None or 'usuario_logado' not in session:
-        return redirect('/login')
+        return redirect(url_for('login', proxima=url_for('novo')))
     else:
         return render_template('novo.html', titulo ='Novo Game')
 
@@ -40,12 +40,13 @@ def criar():
 
     jogo = Jogo(nome, categoria, console)
     games.append(jogo)
-    return redirect('/')
+    return redirect(url_for('index'))
 
 
 @app.route('/login')
 def login():
-    return render_template('login.html')
+    proxima = request.args.get('proxima')
+    return render_template('login.html', proxima=proxima)
 
 
 @app.route('/autenticar', methods=['POST', ])
@@ -53,16 +54,18 @@ def autenticar():
     if senha_padrao == request.form['senha']:
         session['usuario_logado'] = request.form['usuario']
         flash(request.form['usuario'] + ' logou com sucesso!')
-        return redirect('/')
+        proxima_pagina = request.form['proxima']
+        return redirect(proxima_pagina)
     else:
         flash('Usuario ou senha invalidos, tente novamente!')
-        return redirect('/login')
+        return redirect(url_for('login'))
+
 
 @app.route('/logout')
 def logout():
     session['usuario_logado'] = None
     flash('Logout feito com sucesso!')
-    return redirect('/login')
+    return redirect(url_for('login'))
 
 
 app.run(debug=True)
